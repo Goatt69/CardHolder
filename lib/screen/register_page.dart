@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'user_storage.dart'; // Import the UserStorage class
+import '../services/user_storage.dart'; // Import the UserStorage class
 
 class RegisterPage extends StatefulWidget {
   @override
