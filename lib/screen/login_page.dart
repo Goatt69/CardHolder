@@ -80,7 +80,7 @@ class _LoginPageState extends State<LoginPage> {
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.blue[300]!, Colors.blue[900]!],
+              colors: [Colors.blue[50]!, Colors.blue[50]!],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -96,7 +96,7 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Colors.black,
                     ),
                   ),
                   SizedBox(height: 30),
@@ -155,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: Text(
                         'Quên mật khẩu?',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: Colors.black,
                           decoration: TextDecoration.underline,
                         ),
                       ),
@@ -165,8 +165,8 @@ class _LoginPageState extends State<LoginPage> {
                   ElevatedButton(
                     onPressed: _login,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.blue,
+                      backgroundColor: Colors.lightBlueAccent,
+                      foregroundColor: Colors.black,
                       padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -191,7 +191,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: Text(
                       'Chưa có tài khoản? Đăng ký ngay',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.black,
                         decoration: TextDecoration.underline,
                       ),
                     ),
