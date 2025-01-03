@@ -1,11 +1,12 @@
 import 'dart:convert';
+import 'package:cardholder/model/CardHolder.dart';
 import 'package:http/http.dart' as http;
 import '../config/config_url.dart';
 import '../model/PokeCard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CollectionCardService {
-  Future<List<PokeCard>> getUserCards() async {
+  Future<List<CardHolder>> getUserCards() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('jwt_token');
     
@@ -19,7 +20,7 @@ class CollectionCardService {
 
     if (response.statusCode == 200) {
       List<dynamic> jsonResponse = json.decode(response.body);
-      return jsonResponse.map((card) => PokeCard.fromJson(card)).toList();
+      return jsonResponse.map((card) => CardHolder.fromJson(card)).toList();
     }
     throw Exception('Failed to load collection');
   }

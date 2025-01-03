@@ -3,14 +3,15 @@ import '../config/config_url.dart';
 import '../services/pokepost_service.dart';
 import '../services/collection_card_service.dart';
 import '../model/PokePost.dart';
-import '../model/PokeCard.dart';
+import '../model/CardHolder.dart';
+import '../widget/DescriptionDialog.dart';
 
-class TrandePage extends StatefulWidget {
+class TradePage extends StatefulWidget {
   @override
   _TradePageState createState() => _TradePageState();
 }
 
-class _TradePageState extends State<TrandePage> {
+class _TradePageState extends State<TradePage> {
   final PokePostService _pokePostService = PokePostService();
   final CollectionCardService _collectionService = CollectionCardService();
   List<PokePost> _posts = [];
@@ -32,15 +33,15 @@ class _TradePageState extends State<TrandePage> {
     } catch (e) {
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load posts: $e'))
+          SnackBar(content: Text('Failed to load posts: $e'))
       );
     }
   }
 
   Future<void> _createTradeOffer(PokePost post) async {
     final cards = await _collectionService.getUserCards();
-    
-    final selectedCards = await showDialog<List<PokeCard>>(
+
+    final selectedCards = await showDialog<List<CardHolder>>(
       context: context,
       builder: (context) => SelectCardsDialog(cards: cards),
     );
@@ -49,14 +50,14 @@ class _TradePageState extends State<TrandePage> {
       try {
         await _pokePostService.createTradeOffer(
           post.id!,
-          selectedCards.map((c) => c.id!).toList(),
+          selectedCards.map((c) => c.cardId!).toList(),
         );
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Trade offer created successfully!'))
+            SnackBar(content: Text('Trade offer created successfully!'))
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to create trade offer: $e'))
+            SnackBar(content: Text('Failed to create trade offer: $e'))
         );
       }
     }
@@ -65,18 +66,26 @@ class _TradePageState extends State<TrandePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Trade Posts'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () => _showCreatePostDialog(),
+      body: Column(
+        children: [
+          Container(
+            color: Colors.white,
+            height: 100,
+            child: Center(
+              child: Text(
+                'Trade Posts',
+                style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold
+                ),
+              ),
+            ),
           ),
-        ],
-      ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
+          Expanded(
+            child: _isLoading
+                ? Center(child: CircularProgressIndicator())
+                : RefreshIndicator(
               onRefresh: _loadPosts,
               child: ListView.builder(
                 padding: EdgeInsets.all(16.0),
@@ -84,30 +93,48 @@ class _TradePageState extends State<TrandePage> {
                 itemBuilder: (context, index) {
                   final post = _posts[index];
                   return Card(
+                    elevation: 4,
+                    margin: EdgeInsets.symmetric(vertical: 8),
                     child: ListTile(
-                      // In the ListView.builder
                       leading: Image.network(
                         '${Config_URL.imageUrl}/cards/${post.card?.id}/${post.card?.setNum}.jpg',
                         errorBuilder: (context, error, stackTrace) =>
                         const Center(child: Text('Image not available')),
                       ),
                       title: Text(post.card?.name ?? 'Unknown Card'),
-                      subtitle: Text(post.description ?? ''),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(post.description ?? ''),
+                          Text('Posted by: ${post.poster?.userName ?? 'Unknown'}'),
+                        ],
+                      ),
                       trailing: ElevatedButton(
                         onPressed: () => _createTradeOffer(post),
                         child: Text('Trade'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.lightBlue,
+                        ),
                       ),
                     ),
                   );
                 },
               ),
             ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showCreatePostDialog,
+        child: Icon(Icons.add),
+        backgroundColor: Colors.lightBlue,
+      ),
     );
   }
 
   Future<void> _showCreatePostDialog() async {
     final cards = await _collectionService.getUserCards();
-    final selectedCard = await showDialog<PokeCard>(
+    final selectedCard = await showDialog<CardHolder>(
       context: context,
       builder: (context) => SelectCardDialog(cards: cards),
     );
@@ -120,11 +147,11 @@ class _TradePageState extends State<TrandePage> {
 
       if (description != null) {
         try {
-          await _pokePostService.createPost(selectedCard.id!, description);
-          _loadPosts();
+          await _pokePostService.createPost(selectedCard.cardId!, description);
+          await _loadPosts();
         } catch (e) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to create post: $e'))
+              SnackBar(content: Text('Failed to create post: $e'))
           );
         }
       }
@@ -132,9 +159,8 @@ class _TradePageState extends State<TrandePage> {
   }
 }
 
-// Additional helper dialogs
 class SelectCardsDialog extends StatefulWidget {
-  final List<PokeCard> cards;
+  final List<CardHolder> cards;
   SelectCardsDialog({required this.cards});
 
   @override
@@ -142,27 +168,29 @@ class SelectCardsDialog extends StatefulWidget {
 }
 
 class _SelectCardsDialogState extends State<SelectCardsDialog> {
-  List<PokeCard> selectedCards = [];
-  
+  List<CardHolder> selectedCards = [];
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('Select Cards to Offer'),
       content: SizedBox(
         width: double.maxFinite,
+        height: 300,
         child: ListView.builder(
           itemCount: widget.cards.length,
           itemBuilder: (context, index) {
-            final card = widget.cards[index];
+            final cardHolder = widget.cards[index];
             return CheckboxListTile(
-              title: Text(card.name ?? ''),
-              value: selectedCards.contains(card),
+              title: Text(cardHolder.card?.name ?? ''),
+              subtitle: Text('Quantity: ${cardHolder.quantity}'),
+              value: selectedCards.contains(cardHolder),
               onChanged: (bool? value) {
                 setState(() {
                   if (value == true) {
-                    selectedCards.add(card);
+                    selectedCards.add(cardHolder);
                   } else {
-                    selectedCards.remove(card);
+                    selectedCards.remove(cardHolder);
                   }
                 });
               },
@@ -185,7 +213,7 @@ class _SelectCardsDialogState extends State<SelectCardsDialog> {
 }
 
 class SelectCardDialog extends StatelessWidget {
-  final List<PokeCard> cards;
+  final List<CardHolder> cards;
   SelectCardDialog({required this.cards});
 
   @override
@@ -194,49 +222,25 @@ class SelectCardDialog extends StatelessWidget {
       title: Text('Select a Card to Trade'),
       content: SizedBox(
         width: double.maxFinite,
+        height: 300,
         child: ListView.builder(
           itemCount: cards.length,
           itemBuilder: (context, index) {
-            final card = cards[index];
+            final cardHolder = cards[index];
             return ListTile(
-              title: Text(card.name ?? ''),
-              onTap: () => Navigator.pop(context, card),
+              leading: Image.network(
+                '${Config_URL.imageUrl}/cards/${cardHolder.card?.id}/${cardHolder.card?.setNum}.jpg',
+                width: 50,
+                errorBuilder: (context, error, stackTrace) =>
+                const Icon(Icons.image_not_supported),
+              ),
+              title: Text(cardHolder.card?.name ?? ''),
+              subtitle: Text('Quantity: ${cardHolder.quantity}'),
+              onTap: () => Navigator.pop(context, cardHolder),
             );
           },
         ),
       ),
-    );
-  }
-}
-
-class DescriptionDialog extends StatefulWidget {
-  @override
-  _DescriptionDialogState createState() => _DescriptionDialogState();
-}
-
-class _DescriptionDialogState extends State<DescriptionDialog> {
-  final _controller = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Add Description'),
-      content: TextField(
-        controller: _controller,
-        decoration: InputDecoration(
-          hintText: 'Enter trade description',
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text('Cancel'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.pop(context, _controller.text),
-          child: Text('Create'),
-        ),
-      ],
     );
   }
 }

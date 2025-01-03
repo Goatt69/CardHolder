@@ -1,11 +1,10 @@
-import 'package:cardholder/screen/Trande_page.dart';
+import 'package:cardholder/screen/register_page.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/user_storage.dart'; // Import the UserStorage class
 import '../utils/auth.dart';
-import 'home_page.dart';
-import 'User/register_page.dart'; // Import trang đăng ký
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+
+import 'home_page.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -35,7 +34,7 @@ class _LoginPageState extends State<LoginPage> {
       // Nếu token tồn tại, chuyển hướng đến MainScreen
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+        MaterialPageRoute(builder: (context) => MyHomePage()),
       );
     }
   }
@@ -147,7 +146,7 @@ class _LoginPageState extends State<LoginPage> {
         await prefs.setString('jwt_token', result['token']);
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomePage()),
+          MaterialPageRoute(builder: (context) => MyHomePage()),
         );
       }
     }
@@ -229,6 +228,7 @@ class _LoginPageState extends State<LoginPage> {
                   SizedBox(height: 30),
                   TextFormField(
                     controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       labelText: 'Email',
                       prefixIcon: Icon(Icons.email, color: Colors.blue),

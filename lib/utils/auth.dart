@@ -7,15 +7,15 @@ class Auth {
   static final ApiClient _apiClient = ApiClient();
 
   // Đăng nhập
-  static Future<Map<String, dynamic>> login(String username, String password) async {
-    var result = await _authService.login(username, password);
+  static Future<Map<String, dynamic>> login(String email, String password) async {
+    var result = await _authService.login(email, password);
     return result; // returns a map with {success: bool, token: string?, role: string?, message: string?}
   }
   static Future<Map<String, dynamic>> setupTotp() async {
     return await _authService.setupTotp();
   }
-  static Future<Map<String, dynamic>> loginWithTotp(String username, String password, String totpCode) async {
-    return await _authService.loginWithTotp(username, password, totpCode);
+  static Future<Map<String, dynamic>> loginWithTotp(String email, String password, String totpCode) async {
+    return await _authService.loginWithTotp(email, password, totpCode);
   }
   // Đăng ký tài khoản mới
   static Future<Map<String, dynamic>> register({

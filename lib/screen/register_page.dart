@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/user_storage.dart'; // Import the UserStorage class
+
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -19,10 +19,7 @@ class _RegisterPageState extends State<RegisterPage> {
   void _register() {
     if (_formKey.currentState!.validate()) {
       // Add the new user to the registered users list
-      UserStorage.registeredUsers.add({
-        'email': _emailController.text.trim().toLowerCase(),
-        'password': _passwordController.text,
-      });
+
 
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(

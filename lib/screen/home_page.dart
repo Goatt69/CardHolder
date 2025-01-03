@@ -29,7 +29,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<Widget> _pages = [
     HomeContent(), // Trang chính
     CardBookScreen(), // Trang Card Book
-    TrandePage(), // Trang Trande
+    TradePage(), // Trang Trande
     BuyPage(), // Trang Mua hàng
   ];
 

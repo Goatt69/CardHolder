@@ -19,13 +19,13 @@ class AuthService {
     return null;
   }
 
-  Future<Map<String, dynamic>> login(String username, String password) async {
+  Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
-          "username": username,
+          "email": email,
           "password": password,
         }),
       );
@@ -102,13 +102,13 @@ class AuthService {
     }
   }
 
-  Future<Map<String, dynamic>> loginWithTotp(String username, String password, String totpCode) async {
+  Future<Map<String, dynamic>> loginWithTotp(String email, String password, String totpCode) async {
     try {
       final response = await http.post(
         Uri.parse("${Config_URL.baseUrl}Authenticate/login-with-totp?totpCode=$totpCode"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
-          "username": username,
+          "email": email,
           "password": password,
         }),
       );
