@@ -1,16 +1,15 @@
 import 'package:cardholder/screen/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cardholder/screen/home_page.dart';
-import 'package:cardholder/screen/Collection_page.dart';
-import 'package:cardholder/screen/Trade_page.dart';
-import 'package:cardholder/screen/SelectChange_page.dart';
-import 'package:cardholder/screen/Buy_page.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+void main() async {
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  
   const MyApp({super.key});
 
   // This widget is the root of your application.
@@ -25,7 +24,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(),
+      home: LoginPage(),
     );
   }
 }
