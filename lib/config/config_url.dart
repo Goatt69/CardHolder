@@ -10,4 +10,12 @@ class Config_URL {
     }
     return url;
   }
+  static String get imageUrl {
+    final url = dotenv.env['URL'];
+    if (url == null) {
+      print("URL is not set in the .env file.");
+      return "http://localhost:8000";
+    }
+    return url;
+  }
 }

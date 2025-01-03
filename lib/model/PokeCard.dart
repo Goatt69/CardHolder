@@ -1,5 +1,5 @@
-class Card {
-  Card({
+class PokeCard {
+  PokeCard({
     required this.id,
     required this.cardSet,
     required this.series,
@@ -14,6 +14,7 @@ class Card {
     required this.evolvesto,
     required this.rarity,
     required this.flavortext,
+    required this.imageUrl,
   });
 
   final String? id;
@@ -30,9 +31,10 @@ class Card {
   final String? evolvesto;
   final String? rarity;
   final String? flavortext;
+  final String? imageUrl;
 
-  factory Card.fromJson(Map<String, dynamic> json){
-    return Card(
+  factory PokeCard.fromJson(Map<String, dynamic> json){
+    return PokeCard(
       id: json["id"],
       cardSet: json["set"],
       series: json["series"],
@@ -47,6 +49,7 @@ class Card {
       evolvesto: json["evolvesto"],
       rarity: json["rarity"],
       flavortext: json["flavortext"],
+      imageUrl: json["image_url"],
     );
   }
 
@@ -65,5 +68,6 @@ class Card {
     "evolvesto": evolvesto,
     "rarity": rarity,
     "flavortext": flavortext,
+    "image_url": imageUrl,
   };
 }

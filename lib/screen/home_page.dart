@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cardholder/screen/Collection_page.dart';
 import 'package:cardholder/screen/buy_page.dart';
-import 'package:cardholder/screen/Trande_page.dart';
+import 'package:cardholder/screen/Trade_page.dart';
 
 void main() {
   runApp(MyApp());

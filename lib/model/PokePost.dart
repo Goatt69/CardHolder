@@ -1,4 +1,4 @@
-import 'Card.dart';
+import 'PokeCard.dart';
 import 'TradeOffer.dart';
 import 'UserModel.dart';
 
@@ -23,7 +23,7 @@ class PokePost {
   final num? status;
   final List<TradeOffer> tradeOffers;
   final User? poster;
-  final Card? card;
+  final PokeCard? card;
 
   factory PokePost.fromJson(Map<String, dynamic> json){
     return PokePost(
@@ -35,7 +35,7 @@ class PokePost {
       status: json["status"],
       tradeOffers: json["tradeOffers"] == null ? [] : List<TradeOffer>.from(json["tradeOffers"]!.map((x) => TradeOffer.fromJson(x))),
       poster: json["poster"] == null ? null : User.fromJson(json["poster"]),
-      card: json["card"] == null ? null : Card.fromJson(json["card"]),
+      card: json["card"] == null ? null : PokeCard.fromJson(json["card"]),
     );
   }
 

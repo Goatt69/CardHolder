@@ -1,4 +1,4 @@
-import 'Card.dart';
+import 'PokeCard.dart';
 
 class OfferedCard {
   OfferedCard({
@@ -13,7 +13,7 @@ class OfferedCard {
   final num? tradeOfferId;
   final String? cardId;
   final String? tradeOffer;
-  final Card? card;
+  final PokeCard? card;
 
   factory OfferedCard.fromJson(Map<String, dynamic> json){
     return OfferedCard(
@@ -21,7 +21,7 @@ class OfferedCard {
       tradeOfferId: json["tradeOfferId"],
       cardId: json["cardId"],
       tradeOffer: json["tradeOffer"],
-      card: json["card"] == null ? null : Card.fromJson(json["card"]),
+      card: json["card"] == null ? null : PokeCard.fromJson(json["card"]),
     );
   }
 
