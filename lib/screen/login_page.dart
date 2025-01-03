@@ -1,7 +1,11 @@
+import 'package:cardholder/screen/Trande_page.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/user_storage.dart'; // Import the UserStorage class
+import '../utils/auth.dart';
 import 'home_page.dart';
-import 'register_page.dart'; // Import trang đăng ký
+import 'User/register_page.dart'; // Import trang đăng ký
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 class LoginPage extends StatefulWidget {
   @override
@@ -13,26 +17,149 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
+  String value = '';
 
-  void _login() {
-    if (_formKey.currentState!.validate()) {
-      String email = _emailController.text.trim().toLowerCase(); // Convert to lowercase
-      String password = _passwordController.text;
+  @override
+  void initState() {
+    super.initState();
+    _checkToken(); // Kiểm tra token khi mở màn hình
+  }
 
-      // Check if the user is registered
-      bool isRegistered = UserStorage .registeredUsers.any((user) =>
-      user['email']!.toLowerCase() == email && user['password'] == password);
+  // Kiểm tra token trong SharedPreferences
+  Future<void> _checkToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('jwt_token');
 
-      if (isRegistered) {
+    if (token != null) {
+      // Nếu token tồn tại, chuyển hướng đến MainScreen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
+    }
+  }
+
+  Widget buildValidationToast(BuildContext context, shadcn.ToastOverlay overlay) {
+    return shadcn.SurfaceCard(
+      child: shadcn.Basic(
+        title: const Text('Validation Error'),
+        subtitle: const Text('Vui lòng nhập đầy đủ thông tin'),
+        trailing: shadcn.PrimaryButton(
+            size: shadcn.ButtonSize.small,
+            onPressed: () {
+              overlay.close();
+            },
+            child: const Text('Close')
+        ),
+        trailingAlignment: Alignment.center,
+      ),
+    );
+  }
+  Future<void> _handleLogin() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      shadcn.showToast(
+        context: context,
+        builder: buildValidationToast,
+        location: shadcn.ToastLocation.bottomRight,
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    Map<String, dynamic> result = await Auth.login(
+        _emailController.text,
+        _passwordController.text
+    );
+    Widget buildToast(BuildContext context, shadcn.ToastOverlay overlay) {
+      return shadcn.SurfaceCard(
+        child: shadcn.Basic(
+          title: const Text('Đăng nhập thất bại'),
+          subtitle: Text('Kiểm tra tài khoản mật khẩu\n'  + result['message']  ?? 'Đăng nhập thất bại'),
+          trailing: shadcn.PrimaryButton(
+              size: shadcn.ButtonSize.small,
+              onPressed: () {
+                overlay.close();
+              },
+              child: const Text('Close')
+          ),
+          trailingAlignment: Alignment.center,
+        ),
+      );
+    }
+    if (result['success']) {
+      if (result['twoFactorEnabled']) {
+        String? totpCode = await showDialog<String>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Enter 2FA Code'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                shadcn.InputOTP(
+                  onChanged: (value) {
+                    setState(() {
+                      this.value = value.otpToString();
+                    });
+                  },
+                  children: [
+                    shadcn.InputOTPChild.character(allowDigit: true),
+                    shadcn.InputOTPChild.character(allowDigit: true),
+                    shadcn.InputOTPChild.character(allowDigit: true),
+                    shadcn.InputOTPChild.separator,
+                    shadcn.InputOTPChild.character(allowDigit: true),
+                    shadcn.InputOTPChild.character(allowDigit: true),
+                    shadcn.InputOTPChild.character(allowDigit: true),
+                  ],
+                ),
+                const SizedBox(width: 16),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  setState(() => _isLoading = false);
+                },
+                child: const Text('Cancel'),
+              ),
+
+              TextButton(
+                onPressed: () => Navigator.pop(context, value),
+                child: const Text('Verify'),
+              ),
+            ],
+          ),
+        );
+
+        if (totpCode != null) {
+          result = await Auth.loginWithTotp(
+              _emailController.text,
+              _passwordController.text,
+              totpCode
+          );
+        }
+      }
+
+      if (result['success']) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('jwt_token', result['token']);
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => MyHomePage()),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Email hoặc mật khẩu không đúng')),
+          MaterialPageRoute(builder: (context) => HomePage()),
         );
       }
+    }
+
+    setState(() => _isLoading = false);
+
+    if (!result['success']) {
+      shadcn.showToast(
+        context: context,
+        builder: buildToast,
+        location: shadcn.ToastLocation.bottomRight,
+      );
     }
   }
 
@@ -163,7 +290,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   SizedBox(height: 25),
                   ElevatedButton(
-                    onPressed: _login,
+                    onPressed: _handleLogin,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.lightBlueAccent,
                       foregroundColor: Colors.black,
