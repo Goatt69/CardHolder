@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../config/config_url.dart';
 import '../services/pokepost_service.dart';
 import '../services/collection_card_service.dart';
