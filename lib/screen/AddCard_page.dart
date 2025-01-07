@@ -41,8 +41,7 @@ class _PokemonCardEntryPageState extends State<PokemonCardEntryPage> {
   XFile? _selectedImage;
 
   final List<String> _pokemonTypes = [
-    'Lửa', 'Nước', 'Cỏ', 'Điện', 'Tâm Linh',
-    'Sấm', 'Băng', 'Rồng', 'Bóng Tối'
+    'Lửa', 'Nước', 'Cỏ', 'Điện', 'Tâm Linh', 'Sấm', 'Băng', 'Rồng', 'Bóng Tối'
   ];
   String? _selectedType;
 
@@ -60,14 +59,12 @@ class _PokemonCardEntryPageState extends State<PokemonCardEntryPage> {
 
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
-
     try {
       final XFile? image = await picker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 1024,
         maxHeight: 1024,
       );
-
       if (image != null) {
         setState(() {
           _selectedImage = image;
@@ -236,7 +233,7 @@ class _PokemonCardEntryPageState extends State<PokemonCardEntryPage> {
                       'Nhập Thẻ',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight .bold,
+                        fontWeight: FontWeight.bold,
                         color: Colors.black,
                       ),
                     ),
@@ -255,6 +252,12 @@ class _PokemonCardEntryPageState extends State<PokemonCardEntryPage> {
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _pickImage,
+        backgroundColor: Colors.blueAccent,
+        child: Icon(Icons.camera_alt, color: Colors.white),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 

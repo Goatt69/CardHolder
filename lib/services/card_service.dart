@@ -7,7 +7,7 @@ class ApiService {
   static final String baseUrl = dotenv.env['URL'] ?? 'https://apt-kitten-sought.ngrok-free.app';
 
   Future<List<PokeCard>> fetchCards() async {
-    try {      
+    try {
       final response = await http.get(
         Uri.parse('$baseUrl/cards'),
         headers: {
