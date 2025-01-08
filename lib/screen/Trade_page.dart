@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../config/config_url.dart';
 import '../model/UserModel.dart';
 import '../services/auth_service.dart';
@@ -22,7 +23,6 @@ class _TradePageState extends State<TradePage> {
   final CollectionCardService _collectionService = CollectionCardService();
   List<PokePost> _posts = [];
   bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
@@ -33,8 +33,12 @@ class _TradePageState extends State<TradePage> {
   Future<void> _loadPosts() async {
     try {
       final posts = await _pokePostService.getAllPosts();
+      final prefs = await SharedPreferences.getInstance();
+      final roles = prefs.getString('roles') ?? '';
+      final isAdmin = roles.toLowerCase().contains('admin');
+
       setState(() {
-        _posts = posts.where((post) => post.status != 2).toList();
+        _posts = isAdmin ? posts : posts.where((post) => post.status != 2).toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -44,7 +48,7 @@ class _TradePageState extends State<TradePage> {
       );
     }
   }
-
+  
 
   Future<void> _createTradeOffer(PokePost post) async {
     final cards = await _collectionService.getUserCards();
@@ -116,9 +120,6 @@ class _TradePageState extends State<TradePage> {
                 itemBuilder: (context, index) {
                   final post = _posts[index];
                   // Skip posts with status 2
-                  if (post.status == 2) {
-                    return Container(); // Returns an empty container for status 2
-                  }
                   return Card(
                     elevation: 4,
                     child: InkWell(
