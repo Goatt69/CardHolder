@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../utils/auth.dart';
+
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -8,24 +10,60 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isLoading = false;
 
-  void _register() {
-    if (_formKey.currentState!.validate()) {
-      // Add the new user to the registered users list
-
-
-      // Show success message
+  Future<void> _handleRegister() async {
+    // Kiểm tra các trường nhập liệu
+    if (_usernameController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _passwordController.text.isEmpty ||
+        _confirmPasswordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registration successful!')),
+        const SnackBar(
+          content: Text('Vui lòng nhập đầy đủ thông tin'),
+          backgroundColor: Colors.red,
+        ),
       );
-      Navigator.pop(context); // Go back to the login page
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    // Gọi phương thức register từ Auth class
+    Map<String, dynamic> result = await Auth.register(
+      username: _usernameController.text,
+      email: _emailController.text,
+      password: _passwordController.text,
+      confirmPassword: _confirmPasswordController.text,
+    );
+
+    setState(() => _isLoading = false);
+
+    // Xử lý kết quả trả về từ API
+    if (result['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đăng ký thành công!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      // Sau khi đăng ký thành công, quay lại trang đăng nhập
+      Navigator.pop(context);
+    } else {
+      String errorMessage = result['message'] ?? 'Đăng ký thất bại';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -82,7 +120,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       SizedBox(height: 20),
                       _buildTextFormField(
-                        controller: _nameController,
+                        controller: _usernameController,
                         label: 'Name',
                         icon: Icons.person,
                         validator: (value) {
@@ -152,7 +190,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       SizedBox(height: 25),
                       ElevatedButton(
-                        onPressed: _register,
+                        onPressed: _handleRegister,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.lightBlueAccent,
                           padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
