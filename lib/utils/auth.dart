@@ -22,16 +22,14 @@ class Auth {
     required String username,
     required String email,
     required String password,
-    required String initials,
-    required String role,
+    required String confirmPassword,
   }) async {
     // Tạo body để gửi lên API
     Map<String, dynamic> body = {
       "username": username,
       "email": email,
       "password": password,
-      "initials": initials,
-      "role": role,
+      "confirmedPassword": confirmPassword,
     };
 
     // Gọi API đăng ký thông qua ApiClient
