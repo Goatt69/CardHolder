@@ -36,7 +36,8 @@ class AuthService {
           "success": data['status'],
           "token": data['token'],
           "twoFactorEnabled": data['twoFactorEnabled'] ?? false,
-          "message": data['message']
+          "message": data['message'],
+          "roles" : data['roles']
         };
       }
       return {"success": false, "message": "Login failed: ${response.statusCode}"};

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/auth.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
+import 'Admin_page.dart';
 import 'home_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -143,11 +144,24 @@ class _LoginPageState extends State<LoginPage> {
 
       if (result['success']) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('jwt_token', result['token']);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => MyHomePage()),
-        );
+        await prefs.setString('jwt_token', result['token']); // Lưu token
+        String roles = result['roles'] ?? 'User'; // Changed from 'role' to 'roles' to match API response
+        await prefs.setString('roles', roles);
+
+        if (roles.toLowerCase().contains('admin')) {
+          Navigator.pushReplacement(
+            context,
+            //Nếu người dùng là admin thì chuyển đến trang admin
+            MaterialPageRoute(builder: (context) => AdminScreen()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            //nếu không phải là admin thì chuyển đến trang MainScreen
+            MaterialPageRoute(builder: (context) => MyHomePage()),
+
+          );
+        }
       }
     }
 
