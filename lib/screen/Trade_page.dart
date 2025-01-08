@@ -8,6 +8,7 @@ import '../model/PokePost.dart';
 import '../model/CardHolder.dart';
 import '../widget/DescriptionDialog.dart';
 import '../widget/TradeOffersDialog.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 class TradePage extends StatefulWidget {
   @override
@@ -139,7 +140,6 @@ class _TradePageState extends State<TradePage> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                // Left side - Text info
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,7 +148,7 @@ class _TradePageState extends State<TradePage> {
                                         post.card?.name ?? 'Unknown Card',
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 10
+                                          fontSize: 10,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -157,10 +157,23 @@ class _TradePageState extends State<TradePage> {
                                         'By: ${post.poster?.userName ?? 'Unknown'}',
                                         style: TextStyle(fontSize: 8),
                                       ),
+                                      SizedBox(
+                                        height: 20, // Chiều cao của marquee
+                                        child: shadcn.OverflowMarquee
+                                          (
+                                          child:
+                                          Text( post.description ?? 'No description',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 10,
+                                          ),
+
+                                          )
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
-                                // Right side - Button
                                 if (post.posterId != _currentUser?.id)
                                   IconButton(
                                     onPressed: () => _createTradeOffer(post),
@@ -171,6 +184,7 @@ class _TradePageState extends State<TradePage> {
                               ],
                             ),
                           )
+
                         ],
                       ),
                     ),
@@ -273,7 +287,6 @@ class _SelectCardsDialogState extends State<SelectCardsDialog> {
     );
   }
 }
-
 class SelectCardDialog extends StatelessWidget {
   final List<CardHolder> cards;
   SelectCardDialog({required this.cards});
