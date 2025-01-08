@@ -71,7 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.store),
-            label: 'Trande',
+            label: 'Trade',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),

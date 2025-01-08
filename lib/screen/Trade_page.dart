@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import '../config/config_url.dart';
+import '../model/UserModel.dart';
+import '../services/auth_service.dart';
 import '../services/pokepost_service.dart';
 import '../services/collection_card_service.dart';
 import '../model/PokePost.dart';
 import '../model/CardHolder.dart';
 import '../widget/DescriptionDialog.dart';
+import '../widget/TradeOffersDialog.dart';
 
 class TradePage extends StatefulWidget {
   @override
@@ -12,7 +15,9 @@ class TradePage extends StatefulWidget {
 }
 
 class _TradePageState extends State<TradePage> {
+  User? _currentUser;
   final PokePostService _pokePostService = PokePostService();
+  final AuthService _authService = AuthService();
   final CollectionCardService _collectionService = CollectionCardService();
   List<PokePost> _posts = [];
   bool _isLoading = true;
@@ -21,13 +26,14 @@ class _TradePageState extends State<TradePage> {
   void initState() {
     super.initState();
     _loadPosts();
+    _loadCurrentUser();
   }
 
   Future<void> _loadPosts() async {
     try {
       final posts = await _pokePostService.getAllPosts();
       setState(() {
-        _posts = posts;
+        _posts = posts.where((post) => post.status != 2).toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -37,6 +43,7 @@ class _TradePageState extends State<TradePage> {
       );
     }
   }
+
 
   Future<void> _createTradeOffer(PokePost post) async {
     final cards = await _collectionService.getUserCards();
@@ -63,6 +70,15 @@ class _TradePageState extends State<TradePage> {
     }
   }
 
+  Future<void> _loadCurrentUser() async {
+    final userInfo = await _authService.userInfo();
+    if (userInfo['success']) {
+      setState(() {
+        _currentUser = User.fromJson(userInfo['user']);
+      });
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,34 +103,75 @@ class _TradePageState extends State<TradePage> {
                 ? Center(child: CircularProgressIndicator())
                 : RefreshIndicator(
               onRefresh: _loadPosts,
-              child: ListView.builder(
+              child: GridView.builder(
                 padding: EdgeInsets.all(16.0),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.7,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                ),
                 itemCount: _posts.length,
                 itemBuilder: (context, index) {
                   final post = _posts[index];
+                  // Skip posts with status 2
+                  if (post.status == 2) {
+                    return Container(); // Returns an empty container for status 2
+                  }
                   return Card(
                     elevation: 4,
-                    margin: EdgeInsets.symmetric(vertical: 8),
-                    child: ListTile(
-                      leading: Image.network(
-                        '${Config_URL.imageUrl}/cards/${post.card?.id}/${post.card?.setNum}.jpg',
-                        errorBuilder: (context, error, stackTrace) =>
-                        const Center(child: Text('Image not available')),
-                      ),
-                      title: Text(post.card?.name ?? 'Unknown Card'),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    child: InkWell(
+                      onTap: () => _showTradeOffersDialog(post),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Text(post.description ?? ''),
-                          Text('Posted by: ${post.poster?.userName ?? 'Unknown'}'),
+                          Expanded(
+                            flex: 4,
+                            child: Image.network(
+                              '${Config_URL.imageUrl}/cards/${post.card?.id}/${post.card?.setNum}.jpg',
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                              const Center(child: Text('Image not available')),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // Left side - Text info
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        post.card?.name ?? 'Unknown Card',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 10
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        'By: ${post.poster?.userName ?? 'Unknown'}',
+                                        style: TextStyle(fontSize: 8),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Right side - Button
+                                if (post.posterId != _currentUser?.id)
+                                  IconButton(
+                                    onPressed: () => _createTradeOffer(post),
+                                    icon: Icon(Icons.swap_horiz),
+                                    color: Colors.lightBlue,
+                                    tooltip: 'Trade',
+                                  ),
+                              ],
+                            ),
+                          )
                         ],
-                      ),
-                      trailing: ElevatedButton(
-                        onPressed: () => _createTradeOffer(post),
-                        child: Text('Trade'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.lightBlue,
-                        ),
                       ),
                     ),
                   );
@@ -131,7 +188,12 @@ class _TradePageState extends State<TradePage> {
       ),
     );
   }
-
+  void _showTradeOffersDialog(PokePost post) {
+    showDialog(
+      context: context,
+      builder: (context) => TradeOffersDialog(post: post),
+    );
+  }
   Future<void> _showCreatePostDialog() async {
     final cards = await _collectionService.getUserCards();
     final selectedCard = await showDialog<CardHolder>(

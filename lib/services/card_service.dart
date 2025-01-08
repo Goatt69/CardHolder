@@ -4,7 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../model/PokeCard.dart';
 
 class ApiService {
-  static final String baseUrl = dotenv.env['URL'] ?? 'https://apt-kitten-sought.ngrok-free.app';
+  static final String baseUrl = dotenv.env['URL'] ?? '';
 
   Future<List<PokeCard>> fetchCards() async {
     try {

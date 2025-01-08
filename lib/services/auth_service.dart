@@ -66,6 +66,7 @@ class AuthService {
         return {
           "success": true,
           "user": {
+            "id": data['userDetails']['id'],
             "userName": data['userDetails']['username'],
             "email": data['userDetails']['email'],
             "avatarUrl": data['userDetails']['avatarUrl'],
