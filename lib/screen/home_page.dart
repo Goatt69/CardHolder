@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cardholder/screen/Collection_page.dart';
-import 'package:cardholder/screen/buy_page.dart';
+import 'package:cardholder/screen/AddCard_page.dart';
 import 'package:cardholder/screen/Trade_page.dart';
 
 void main() {
@@ -28,9 +28,9 @@ class _MyHomePageState extends State<MyHomePage> {
   // Danh sách các trang tương ứng với các icon
   final List<Widget> _pages = [
     HomeContent(), // Trang chính
-    CardBookScreen(), // Trang Card Book
+    PokemonCardBrowser(), // Trang Card Book
     TradePage(), // Trang Trande
-    BuyPage(), // Trang Mua hàng
+    PokemonCardEntryPage(), // Trang Mua hàng
   ];
 
   @override
@@ -66,8 +66,8 @@ class _MyHomePageState extends State<MyHomePage> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.pin_rounded),
-            label: 'Card Book',
+            icon: Icon(Icons.collections_bookmark_sharp),
+            label: 'Collections',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.store),
@@ -75,7 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
-            label: 'Buy',
+            label: 'AddCard',
           ),
         ],
       ),
