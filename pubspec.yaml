@@ -23,6 +23,8 @@ dependencies:
   sqflite: ^2.0.0+3
   path_provider: ^2.0.11
   marquee: ^2.3.0
+  camera: ^0.11.0+2
+  google_mlkit_text_recognition: ^0.14.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -7,7 +7,8 @@ import 'package:cardholder/model/PokeCard.dart';
 import 'package:cardholder/services/card_service.dart';
 import 'package:cardholder/services/collection_card_service.dart';
 import 'package:url_launcher/url_launcher.dart';
-
+import '../screen/ocr_screen.dart';
+import 'package:camera/camera.dart';
 import '../config/config_url.dart';
 import '../model/CardHolder.dart';
 import '../services/auth_service.dart';
@@ -486,8 +487,33 @@ class _PokemonCardBrowserState extends State<PokemonCardBrowser> {
       ),
     );
   }
+  // void _onCameraButtonPressed() {
+  //   // Hiển thị thông báo hoặc xử lý mở máy ảnh, thư viện
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text('Chọn hành động'),
+  //       content: const Text('Bạn muốn mở máy ảnh hay thư viện ảnh?'),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () {
+  //             Navigator.pop(context);
+  //             // TODO: Thêm xử lý mở máy ảnh
+  //           },
+  //           child: const Text('Máy ảnh'),
+  //         ),
+  //         TextButton(
+  //           onPressed: () {
+  //             Navigator.pop(context);
+  //             // TODO: Thêm xử lý mở thư viện ảnh
+  //           },
+  //           child: const Text('Thư viện'),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
   void _onCameraButtonPressed() {
-    // Hiển thị thông báo hoặc xử lý mở máy ảnh, thư viện
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -495,9 +521,37 @@ class _PokemonCardBrowserState extends State<PokemonCardBrowser> {
         content: const Text('Bạn muốn mở máy ảnh hay thư viện ảnh?'),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Thêm xử lý mở máy ảnh
+            onPressed: () async {
+              Navigator.pop(context); // Đóng dialog
+              try {
+                final cameras = await availableCameras();
+
+                // Điều hướng tới OCRScreen và nhận cardId
+                final cardId = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => OCRScreen(cameras: cameras),
+                  ),
+                );
+
+                // Xử lý sau khi nhận được cardId
+                if (cardId != null) {
+                  print("Card ID returned from OCR: $cardId");
+
+                  // Gọi addCardToCollection sau khi nhận được cardId
+                  await _collectionService.addCardToCollection(cardId);
+
+                  // Hiển thị thông báo thành công
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Card added successfully!')),
+                  );
+
+                  // Cập nhật danh sách thẻ
+                  await _loadUserCollection();
+                }
+              } catch (e) {
+                print("Error initializing camera or adding card: $e");
+              }
             },
             child: const Text('Máy ảnh'),
           ),
@@ -512,5 +566,4 @@ class _PokemonCardBrowserState extends State<PokemonCardBrowser> {
       ),
     );
   }
-
 }
