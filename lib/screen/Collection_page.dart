@@ -84,6 +84,39 @@ class _PokemonCardBrowserState extends State<PokemonCardBrowser> {
     setState(() => userCards = collection);
   }
 
+  Future<void> _addCardToCollection(PokeCard card) async {
+    if (card.id == null) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final success = await _collectionService.addCardToCollection(card.id!);
+      Navigator.pop(context); // Đóng loading dialog
+
+      if (success) {
+        // Cập nhật lại danh sách card của user
+        await _loadUserCollection();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Thêm thẻ thành công!')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Không thể thêm thẻ. Vui lòng thử lại!')),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context); // Đóng loading dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đã xảy ra lỗi. Vui lòng thử lại!')),
+      );
+    }
+  }
+
+
   void _precacheImages() {
     for (var card in [
       ...databaseCards,
@@ -372,6 +405,15 @@ class _PokemonCardBrowserState extends State<PokemonCardBrowser> {
                       child: IconButton(
                         onPressed: () => _launchMarketUrl(card.id),
                         icon: const Icon(Icons.shopping_cart, size: 14),
+                        padding: EdgeInsets.zero,
+                      ),
+                    ),
+                    SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: IconButton(
+                        onPressed: () => _addCardToCollection(card),
+                        icon: const Icon(Icons.add_circle_outline, size: 14),
                         padding: EdgeInsets.zero,
                       ),
                     ),
