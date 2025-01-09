@@ -20,6 +20,7 @@ dependencies:
   shadcn_flutter: ^0.0.24
   image_picker: ^1.1.2
   url_launcher: ^6.1.7
+  marquee: ^2.3.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
