@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:math' as math;
 import 'package:cardholder/model/PokeCard.dart';
 import 'package:cardholder/services/card_service.dart';
