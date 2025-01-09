@@ -29,7 +29,7 @@ class Auth {
       "username": username,
       "email": email,
       "password": password,
-      "confirmedPassword": confirmPassword,
+      "confirmPassword": confirmPassword,
     };
 
     // Gọi API đăng ký thông qua ApiClient
