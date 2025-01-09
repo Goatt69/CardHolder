@@ -22,7 +22,7 @@ class User {
 
   final String? initials;
   final String? totpSecretKey;
-  final String? avatarUrl;
+  late final String? avatarUrl;
   final String? id;
   final String? userName;
   final String? normalizedUserName;

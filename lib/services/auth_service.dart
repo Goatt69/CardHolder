@@ -96,7 +96,8 @@ class AuthService {
 
       final data = jsonDecode(response.body);
       return {
-        "success": response.statusCode == 200,
+        "success": data['status'],
+        "message": data['message'],
         "secretKey": data['secretKey']
       };
     } catch (e) {
@@ -127,4 +128,96 @@ class AuthService {
       return {"success": false, "message": "Network error: $e"};
     }
   }
+
+  Future<Map<String, dynamic>> updateAvatar(String avatarUrl) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('jwt_token');
+
+    try {
+      final response = await http.put(
+        Uri.parse("${Config_URL.baseUrl}Authenticate/update-avatar"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token"
+        },
+        body: jsonEncode({
+          "avatarUrl": avatarUrl,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+      return {
+        "success": data['status'],
+        "message": data['message'],
+        "avatarUrl": data['avatarUrl']
+      };
+    } catch (e) {
+      return {"success": false, "message": "Network error: $e"};
+    }
+  }
+
+  Future<Map<String, dynamic>> changePassword(String oldPassword, String newPassword, String retypePassword) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('jwt_token');
+
+    // Validate password length
+    if (newPassword.length < 6) {
+      return {
+        "success": false,
+        "message": "New password must be at least 6 characters long"
+      };
+    }
+
+    // Validate password match
+    if (newPassword != retypePassword) {
+      return {
+        "success": false,
+        "message": "New password and retype password do not match"
+      };
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse("${Config_URL.baseUrl}Authenticate/change-password"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token"
+        },
+        body: jsonEncode({
+          "oldPassword": oldPassword,
+          "newPassword": newPassword,
+          "retypeNewPassword": retypePassword
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+      return {
+        "success": data['status'],
+        "message": data['message']
+      };
+    } catch (e) {
+      return {"success": false, "message": "Network error: $e"};
+    }
+  }
+
+  Future<Map<String, dynamic>> forgotPassword(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse("${Config_URL.baseUrl}Authenticate/forgot-password"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "email": email,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+      return {
+        "success": data['status'],
+        "message": data['message']
+      };
+    } catch (e) {
+      return {"success": false, "message": "Network error: $e"};
+    }
+  }
+
 }
