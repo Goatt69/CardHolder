@@ -1,3 +1,4 @@
+import 'package:cardholder/screen/admin_page.dart';
 import 'package:cardholder/screen/register_page.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -170,7 +171,7 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.pushReplacement(
             context,
             //Nếu người dùng là admin thì chuyển đến trang admin
-            MaterialPageRoute(builder: (context) => AdminScreen()),
+            MaterialPageRoute(builder: (context) => AdminDashboard()),
           );
         } else {
           Navigator.pushReplacement(
