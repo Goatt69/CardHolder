@@ -325,8 +325,14 @@ class _PokemonCardBrowserState extends State<PokemonCardBrowser> {
     final String? imageUrl = card.id != null && card.setNum != null
         ? '${Config_URL.imageUrl}/cards/${card.id}/${card.setNum}.jpg'
         : null;
+    final CardHolder? userCard = userCards.firstWhere(
+          (uc) => uc.card?.id == card.id,
+      orElse: () => CardHolder(id: null, userId: null, cardId: null, quantity: 0, user: null, card: null),
+    );
+    final num quantity = userCard?.quantity ?? 0;
+    final bool isOwned = quantity > 0;
 
-    final bool isOwned = userCards.any((uc) => uc.card?.id == card.id);
+    //final bool isOwned = userCards.any((uc) => uc.card?.id == card.id);
 
     return Card(
       elevation: 4,
@@ -361,6 +367,7 @@ class _PokemonCardBrowserState extends State<PokemonCardBrowser> {
             )
                 : const Center(child: Text('Không có hình ảnh')),
           ),
+
           Container(
             height: 50,
             child: Row(
@@ -422,6 +429,21 @@ class _PokemonCardBrowserState extends State<PokemonCardBrowser> {
               ],
             ),
           ),
+          if (isOwned)
+            Positioned(
+              top: 1,
+              left: 1,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 1, vertical: 1),
+                child: Text(
+                  '${quantity.toInt()}',
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 8,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
