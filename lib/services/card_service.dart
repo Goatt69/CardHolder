@@ -27,4 +27,21 @@ class ApiService {
       throw Exception('Failed to load cards: $e');
     }
   }
+  Future<void> addCard(Map<String, dynamic> cardData) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/cards'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(cardData),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to add card: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error adding card: $e');
+    }
+  }
 }
