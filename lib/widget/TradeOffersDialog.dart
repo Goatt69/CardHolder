@@ -87,6 +87,7 @@ class _TradeOffersDialogState extends State<TradeOffersDialog> {
                 itemBuilder: (context, index) {
                   final offer = widget.post.tradeOffers[index];
                   return Card(
+                    color: offer.status == 1 ? Colors.green[100] : null,
                     child: Padding(
                       padding: EdgeInsets.all(8),
                       child: Column(
