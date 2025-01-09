@@ -1,46 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
-
+import '../services/newspost_service.dart';
 import '../model/NewsPosts.dart';
-
-
-class DatabaseHelper {
-  static const _dbName = 'news_database.db';
-  static const _dbVersion = 1;
-  static const _tableName = 'news_posts';
-
-  Future<Database> _database() async {
-    return openDatabase(
-      join(await getDatabasesPath(), _dbName),
-      version: _dbVersion,
-      onCreate: (db, version) async {
-        await db.execute('''
-          CREATE TABLE $_tableName (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT,
-            content TEXT,
-            imageUrl TEXT,
-            createdAt TEXT,
-            adminId TEXT,
-            isPublished INTEGER
-          )
-        ''');
-      },
-    );
-  }
-
-  Future<void> insertNewsPost(NewsPost post) async {
-    final db = await _database();
-    await db.insert(
-      _tableName,
-      post.toJson(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
-}
 
 class AdminPage extends StatefulWidget {
   @override
@@ -51,14 +11,15 @@ class _AdminPageState extends State<AdminPage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
   final TextEditingController _imageUrlController = TextEditingController();
-  final DatabaseHelper _dbHelper = DatabaseHelper();
+  final NewsPostService _newsPostService = NewsPostService();
+  bool _isPublished = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Admin Page',
+          'Admin News Management',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.blueAccent,
@@ -69,19 +30,29 @@ class _AdminPageState extends State<AdminPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildInputField(
-              label: 'Tiêu Đề Thẻ',
-              hint: 'Nhập tên thẻ Pokemon',
+              label: 'Title',
+              hint: 'Enter news title',
               controller: _titleController,
             ),
             SizedBox(height: 20),
             _buildInputField(
-              label: 'Mô Tả Thẻ',
-              hint: 'Nhập thông tin chi tiết về thẻ Pokemon',
+              label: 'Content',
+              hint: 'Enter news content',
               controller: _contentController,
               maxLines: 6,
             ),
             SizedBox(height: 20),
             _buildImageUrlInput(),
+            SizedBox(height: 20),
+            SwitchListTile(
+              title: Text('Publish'),
+              value: _isPublished,
+              onChanged: (bool value) {
+                setState(() {
+                  _isPublished = value;
+                });
+              },
+            ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: _submitPost,
@@ -90,7 +61,7 @@ class _AdminPageState extends State<AdminPage> {
                 padding: EdgeInsets.symmetric(vertical: 15),
               ),
               child: Text(
-                'Tạo Thẻ Mới',
+                'Create News Post',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -104,6 +75,31 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 
+  Future<void> _submitPost() async {
+    
+    
+    try {
+      await _newsPostService.createNewsPost(
+        _titleController.text,
+        _contentController.text,
+        _imageUrlController.text,
+        _isPublished,
+      );
+      _showSnackBar('News post created successfully');
+      _clearForm();
+    } catch (e) {
+      _showSnackBar('Failed to create news post: $e');
+    }
+  }
+
+  void _clearForm() {
+    _titleController.clear();
+    _contentController.clear();
+    _imageUrlController.clear();
+    setState(() {
+      _isPublished = false;
+    });
+  }
   Widget _buildInputField({
     required String label,
     required String hint,
@@ -172,61 +168,10 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 
-  Future<void> _submitPost() async {
-    if (_titleController.text.isEmpty) {
-      _showSnackBar('Vui lòng nhập tên thẻ');
-      return;
-    }
-
-    if (_contentController.text.isEmpty) {
-      _showSnackBar('Vui lòng nhập mô tả thẻ');
-      return;
-    }
-
-    if (_imageUrlController.text.isEmpty) {
-      _showSnackBar('Vui lòng nhập URL ảnh thẻ');
-      return;
-    }
-
-    try {
-      // Tạo đối tượng NewsPost từ dữ liệu trong form
-      NewsPost newPost = NewsPost(
-        title: _titleController.text,
-        content: _contentController.text,
-        imageUrl: _imageUrlController.text,
-        createdAt: DateTime.now().toIso8601String(),
-        adminId: 'admin123',  // Giả sử adminId là 'admin123'
-        isPublished: true,
-      );
-
-      // Gửi dữ liệu lên API (tạo bài viết mới)
-      final response = await http.post(
-        Uri.parse('https://yourapi.com/newsposts'),  // Thay URL API của bạn vào đây
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(newPost.toJson()),
-      );
-
-      if (response.statusCode == 201) {
-        // Nếu yêu cầu thành công, lưu bài viết vào cơ sở dữ liệu
-        await _dbHelper.insertNewsPost(newPost);
-
-        // Xóa dữ liệu nhập vào sau khi thành công
-        _titleController.clear();
-        _contentController.clear();
-        _imageUrlController.clear();
-
-        _showSnackBar('Thẻ đã được thêm vào cơ sở dữ liệu!');
-      } else {
-        _showSnackBar('Lỗi khi thêm bài viết: ${response.body}');
-      }
-    } catch (e) {
-      _showSnackBar('Lỗi khi thêm bài viết: $e');
-    }
-  }
-
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context as BuildContext).showSnackBar(SnackBar(content: Text(message)));
   }
+
 }
 
 void main() {
