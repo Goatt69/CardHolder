@@ -487,32 +487,7 @@ class _PokemonCardBrowserState extends State<PokemonCardBrowser> {
       ),
     );
   }
-  // void _onCameraButtonPressed() {
-  //   // Hiển thị thông báo hoặc xử lý mở máy ảnh, thư viện
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       title: const Text('Chọn hành động'),
-  //       content: const Text('Bạn muốn mở máy ảnh hay thư viện ảnh?'),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () {
-  //             Navigator.pop(context);
-  //             // TODO: Thêm xử lý mở máy ảnh
-  //           },
-  //           child: const Text('Máy ảnh'),
-  //         ),
-  //         TextButton(
-  //           onPressed: () {
-  //             Navigator.pop(context);
-  //             // TODO: Thêm xử lý mở thư viện ảnh
-  //           },
-  //           child: const Text('Thư viện'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
+
   void _onCameraButtonPressed() {
     showDialog(
       context: context,
