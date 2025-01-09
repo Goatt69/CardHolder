@@ -1,6 +1,7 @@
 import 'package:cardholder/screen/register_page.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/auth_service.dart';
 import '../utils/auth.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
@@ -148,6 +149,23 @@ class _LoginPageState extends State<LoginPage> {
         String roles = result['roles'] ?? 'User'; // Changed from 'role' to 'roles' to match API response
         await prefs.setString('roles', roles);
 
+        shadcn.showToast(
+          context: context,
+          builder: (context, overlay) => shadcn.SurfaceCard(
+            child: shadcn.Basic(
+              title: const Text('Đăng nhập thành công'),
+              subtitle: Text('Chào mừng trở lại!'),
+              trailing: shadcn.PrimaryButton(
+                  size: shadcn.ButtonSize.small,
+                  onPressed: () => overlay.close(),
+                  child: const Text('Close')
+              ),
+              trailingAlignment: Alignment.center,
+            ),
+          ),
+          location: shadcn.ToastLocation.bottomRight,
+        );
+        
         if (roles.toLowerCase().contains('admin')) {
           Navigator.pushReplacement(
             context,
@@ -196,12 +214,28 @@ class _LoginPageState extends State<LoginPage> {
               child: Text('Hủy'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (resetEmailController.text.isNotEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Đã gửi hướng dẫn đặt lại mật khẩu')),
-                  );
+                  final result = await AuthService().forgotPassword(resetEmailController.text);
+
                   Navigator.pop(context);
+
+                  shadcn.showToast(
+                    context: context,
+                    builder: (context, overlay) => shadcn.SurfaceCard(
+                      child: shadcn.Basic(
+                        title: Text(result['success'] ? 'Success' : 'Error'),
+                        subtitle: Text(result['message']),
+                        trailing: shadcn.PrimaryButton(
+                            size: shadcn.ButtonSize.small,
+                            onPressed: () => overlay.close(),
+                            child: const Text('Close')
+                        ),
+                        trailingAlignment: Alignment.center,
+                      ),
+                    ),
+                    location: shadcn.ToastLocation.bottomRight,
+                  );
                 }
               },
               child: Text('Đặt lại'),
@@ -211,7 +245,7 @@ class _LoginPageState extends State<LoginPage> {
       },
     );
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
