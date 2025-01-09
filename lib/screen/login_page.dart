@@ -6,7 +6,7 @@ import '../services/auth_service.dart';
 import '../utils/auth.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
-import 'Admin_page.dart';
+import 'AdminDashboard.dart';
 import 'home_page.dart';
 
 class LoginPage extends StatefulWidget {
