@@ -1,6 +1,6 @@
+import 'package:cardholder/screen/account_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cardholder/screen/Collection_page.dart';
-import 'package:cardholder/screen/AddCard_page.dart';
 import 'package:cardholder/screen/Trade_page.dart';
 
 void main() {
@@ -30,7 +30,7 @@ class _MyHomePageState extends State<MyHomePage> {
     HomeContent(), // Trang chính
     PokemonCardBrowser(), // Trang Card Book
     TradePage(), // Trang Trande
-    PokemonCardEntryPage(), // Trang Mua hàng
+    AccountScreen(), // User
   ];
 
   @override
@@ -74,8 +74,8 @@ class _MyHomePageState extends State<MyHomePage> {
             label: 'Trade',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'AddCard',
+            icon: Icon(Icons.person),
+            label: 'User',
           ),
         ],
       ),
