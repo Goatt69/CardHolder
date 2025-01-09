@@ -33,10 +33,19 @@ class PokemonCardEntryPage extends StatefulWidget {
 }
 
 class _PokemonCardEntryPageState extends State<PokemonCardEntryPage> {
+  final TextEditingController _idController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _cardCodeController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _setController = TextEditingController();
+  final TextEditingController _seriesController = TextEditingController();
+  final TextEditingController _generationController = TextEditingController();
+  final TextEditingController _releaseDateController = TextEditingController();
+  final TextEditingController _setNumController = TextEditingController();
+  final TextEditingController _supertypeController = TextEditingController();
+  final TextEditingController _hpController = TextEditingController();
+  final TextEditingController _evolvesFromController = TextEditingController();
+  final TextEditingController _evolvesToController = TextEditingController();
   final TextEditingController _rarityController = TextEditingController();
+  final TextEditingController _flavorTextController = TextEditingController();
 
   XFile? _selectedImage;
 
@@ -44,18 +53,6 @@ class _PokemonCardEntryPageState extends State<PokemonCardEntryPage> {
     'Lửa', 'Nước', 'Cỏ', 'Điện', 'Tâm Linh', 'Sấm', 'Băng', 'Rồng', 'Bóng Tối'
   ];
   String? _selectedType;
-
-  final Map<String, Color> _pokemonTypeColors = {
-    'Lửa': Colors.red,
-    'Nước': Colors.blue,
-    'Cỏ': Colors.green,
-    'Điện': Colors.yellow,
-    'Tâm Linh': Colors.purple,
-    'Sấm': Colors.orange,
-    'Băng': Colors.cyan,
-    'Rồng': Colors.deepPurple,
-    'Bóng Tối': Colors.black54,
-  };
 
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
@@ -75,14 +72,9 @@ class _PokemonCardEntryPageState extends State<PokemonCardEntryPage> {
     }
   }
 
-  void _submitPokemonCard() {
+  Future<void> _submitPokemonCard() async {
     if (_nameController.text.isEmpty) {
       _showErrorDialog('Vui lòng nhập tên Pokemon');
-      return;
-    }
-
-    if (_cardCodeController.text.isEmpty) {
-      _showErrorDialog('Vui lòng nhập mã thẻ');
       return;
     }
 
@@ -91,16 +83,35 @@ class _PokemonCardEntryPageState extends State<PokemonCardEntryPage> {
       return;
     }
 
-    _saveCardToDatabase();
-    _showSuccessDialog();
-  }
+    Map<String, dynamic> newCard = {
+      "id": _idController.text.isEmpty ? null : _idController.text,
+      "name": _nameController.text,
+      "set": _setController.text,
+      "series": _seriesController.text,
+      "generation": _generationController.text,
+      "release_date": _releaseDateController.text.isEmpty
+          ? null
+          : _releaseDateController.text,
+      "set_num": _setNumController.text,
+      "types": _selectedType,
+      "supertype": _supertypeController.text,
+      "hp": _hpController.text.isEmpty ? null : num.tryParse(_hpController.text),
+      "evolvesfrom": _evolvesFromController.text,
+      "evolvesto": _evolvesToController.text,
+      "rarity": _rarityController.text,
+      "flavortext": _flavorTextController.text,
+      "image_url": _selectedImage!.path,
+    };
 
-  void _saveCardToDatabase() {
-    print('Lưu thẻ Pokemon:');
-    print('Tên: ${_nameController.text}');
-    print('Mã Thẻ: ${_cardCodeController.text}');
-    print('Loại: $_selectedType');
-    print('Ảnh: ${_selectedImage!.path}');
+    try {
+      // Gửi dữ liệu đến API hoặc lưu cục bộ.
+      print("Dữ liệu thẻ mới:");
+      print(newCard);
+      _showSuccessDialog();
+      _resetForm();
+    } catch (e) {
+      _showErrorDialog('Lỗi khi thêm thẻ: $e');
+    }
   }
 
   void _showErrorDialog(String message) {
@@ -146,10 +157,19 @@ class _PokemonCardEntryPageState extends State<PokemonCardEntryPage> {
 
   void _resetForm() {
     setState(() {
+      _idController.clear();
       _nameController.clear();
-      _cardCodeController.clear();
-      _descriptionController.clear();
+      _setController.clear();
+      _seriesController.clear();
+      _generationController.clear();
+      _releaseDateController.clear();
+      _setNumController.clear();
+      _supertypeController.clear();
+      _hpController.clear();
+      _evolvesFromController.clear();
+      _evolvesToController.clear();
       _rarityController.clear();
+      _flavorTextController.clear();
       _selectedImage = null;
       _selectedType = null;
     });
@@ -158,34 +178,26 @@ class _PokemonCardEntryPageState extends State<PokemonCardEntryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Nhập Thẻ Pokemon',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+        appBar: AppBar(
+          title: Text(
+            'Nhập Thẻ Pokemon',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
-        ),
-        centerTitle: true,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.blueAccent, Colors.blueAccent],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+          centerTitle: true,
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blueAccent, Colors.blueAccent],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
           ),
         ),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.white, Colors.grey[200]!],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: SingleChildScrollView(
+        body: SingleChildScrollView(
           padding: EdgeInsets.all(16),
           child: Card(
             elevation: 8,
@@ -197,59 +209,111 @@ class _PokemonCardEntryPageState extends State<PokemonCardEntryPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildTextField(
-                    controller: _nameController,
-                    labelText: 'Tên Pokemon',
-                    prefixIcon: Icons.pets,
-                  ),
-                  SizedBox(height: 16),
-                  _buildTextField(
-                    controller: _cardCodeController,
-                    labelText: 'Mã Thẻ',
-                    prefixIcon: Icons.code,
-                  ),
-                  SizedBox(height: 16),
-                  _buildPokemonTypeDropdown(),
-                  SizedBox(height: 16),
-                  _buildTextField(
-                    controller: _descriptionController,
-                    labelText: 'Mô Tả',
-                    prefixIcon: Icons.description,
-                    maxLines: 3,
-                  ),
-                  SizedBox(height: 16),
-                  _buildTextField(
-                    controller: _rarityController,
-                    labelText: 'Độ Hiếm',
-                    prefixIcon: Icons.star,
-                  ),
-                  SizedBox(height: 16),
-                  _buildImageUploadSection(),
-                  SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: _submitPokemonCard,
-                    icon: Icon(Icons.save),
-                    label: Text(
-                      'Nhập Thẻ',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      textStyle: TextStyle(fontSize: 18),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ],
+                _buildTextField(
+                controller: _idController,
+                labelText: 'ID',
+                prefixIcon: Icons.vpn_key,
               ),
-            ),
-          ),
+              SizedBox(height: 16),
+              _buildTextField(
+                controller: _nameController,
+                labelText: 'Name',
+                prefixIcon: Icons.pets,
+              ),
+              SizedBox(height: 16),
+              _buildTextField(
+                controller: _setController,
+                labelText: 'Set',
+                prefixIcon: Icons.set_meal,
+              ),
+              SizedBox(height: 16),
+              _buildTextField(
+                controller: _seriesController,
+                labelText: 'Series',
+                prefixIcon: Icons.collections,
+              ),
+              SizedBox(height: 16),
+              _buildTextField(
+                controller: _generationController,
+                labelText: 'Generation',
+                prefixIcon: Icons.campaign,
+              ),
+              SizedBox(height: 16),
+              _buildTextField(
+                controller: _releaseDateController,
+                labelText: 'Release Date',
+                prefixIcon: Icons.date_range,
+              ),
+              SizedBox(height: 16),
+              _buildTextField(
+                controller: _setNumController,
+                labelText: 'Set Number',
+                prefixIcon: Icons.numbers,
+              ),
+              SizedBox(height: 16),
+              _buildTextField(
+                controller: _supertypeController,
+                labelText: 'Supertype',
+                prefixIcon: Icons.supervised_user_circle,
+              ),
+              SizedBox(height: 16),
+              _buildTextField(
+                controller: _hpController,
+                labelText: 'HP',
+                prefixIcon: Icons.health_and_safety,
+              ),
+              SizedBox(height: 16),
+              _buildTextField(
+                controller: _evolvesFromController,
+                labelText: 'Evolves From',
+                prefixIcon: Icons.arrow_forward,
+              ),
+              SizedBox(height: 16),
+              _buildTextField(
+                controller: _evolvesToController,
+                labelText: 'Evolves To',
+                prefixIcon: Icons.arrow_back,
+              ),
+              SizedBox(height: 16),
+              _buildTextField(
+                controller: _rarityController,
+                labelText: 'Rarity',
+                prefixIcon: Icons.star,
+              ),
+              SizedBox(height: 16),
+              _buildTextField(
+                controller: _flavorTextController,
+                labelText: 'Flavor Text',
+                prefixIcon: Icons.comment,
+              ),
+              SizedBox(height: 16),
+              _buildPokemonTypeDropdown(),
+              SizedBox(height: 16),
+              _buildImageUploadSection(),
+              SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: _submitPokemonCard,
+                icon: Icon(Icons.save),
+                label: Text(
+                  'Nhập Thẻ',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  textStyle: TextStyle(fontSize: 18),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
         ),
       ),
       floatingActionButton: FloatingActionButton(

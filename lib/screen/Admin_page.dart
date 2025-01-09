@@ -1,77 +1,66 @@
-import 'package:flutter/foundation.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 
-void main() {
-  runApp(MyApp());
-}
+import '../model/NewsPosts.dart';
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.grey[100],
-      ),
-      home: AdminScreen(),
+
+class DatabaseHelper {
+  static const _dbName = 'news_database.db';
+  static const _dbVersion = 1;
+  static const _tableName = 'news_posts';
+
+  Future<Database> _database() async {
+    return openDatabase(
+      join(await getDatabasesPath(), _dbName),
+      version: _dbVersion,
+      onCreate: (db, version) async {
+        await db.execute('''
+          CREATE TABLE $_tableName (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT,
+            content TEXT,
+            imageUrl TEXT,
+            createdAt TEXT,
+            adminId TEXT,
+            isPublished INTEGER
+          )
+        ''');
+      },
+    );
+  }
+
+  Future<void> insertNewsPost(NewsPost post) async {
+    final db = await _database();
+    await db.insert(
+      _tableName,
+      post.toJson(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 }
 
-class AdminScreen extends StatefulWidget {
+class AdminPage extends StatefulWidget {
   @override
-  _AdminScreenState createState() => _AdminScreenState();
+  _AdminPageState createState() => _AdminPageState();
 }
 
-class _AdminScreenState extends State<AdminScreen> {
-  // Controllers để quản lý text input
+class _AdminPageState extends State<AdminPage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
-
-  // Biến lưu trữ hình ảnh
-  XFile? _selectedImage;
-
-  // Hàm chọn ảnh từ thư viện
-  Future<void> _pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    try {
-      final XFile? image = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1024,
-        maxHeight: 1024,
-      );
-
-      if (image != null) {
-        setState(() {
-          _selectedImage = image;
-        });
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi tải ảnh: $e')),
-      );
-    }
-  }
+  final TextEditingController _imageUrlController = TextEditingController();
+  final DatabaseHelper _dbHelper = DatabaseHelper();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Padding(
-          padding: const EdgeInsets.only(left: 16.0, top: 10.0),
-          child: Text(
-            'Thêm Thẻ Mới',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
+        title: Text(
+          'Admin Page',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
-        centerTitle: false,
         backgroundColor: Colors.blueAccent,
       ),
       body: SingleChildScrollView(
@@ -79,162 +68,111 @@ class _AdminScreenState extends State<AdminScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildTitleBox(),
+            _buildInputField(
+              label: 'Tiêu Đề Thẻ',
+              hint: 'Nhập tên thẻ Pokemon',
+              controller: _titleController,
+            ),
             SizedBox(height: 20),
-            _buildContentBox(),
+            _buildInputField(
+              label: 'Mô Tả Thẻ',
+              hint: 'Nhập thông tin chi tiết về thẻ Pokemon',
+              controller: _contentController,
+              maxLines: 6,
+            ),
             SizedBox(height: 20),
-            _buildImageUploadSection(),
+            _buildImageUrlInput(),
             SizedBox(height: 20),
-            _buildSubmitButton()
+            ElevatedButton(
+              onPressed: _submitPost,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                padding: EdgeInsets.symmetric(vertical: 15),
+              ),
+              child: Text(
+                'Tạo Thẻ Mới',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  // Widget Khung Tiêu Đề
-  Widget _buildTitleBox() {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.blue, width: 2),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      padding: EdgeInsets.all(15),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Tiêu Đề Thẻ',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue,
-            ),
-          ),
-          SizedBox(height: 10),
-          TextField(
-            controller: _titleController,
-            decoration: InputDecoration(
-              hintText: 'Nhập tên thẻ Pokemon',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Widget Khung Nội Dung
-  Widget _buildContentBox() {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.blue, width: 2),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      padding: EdgeInsets.all(15),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Mô Tả Thẻ',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue,
-            ),
-          ),
-          SizedBox(height: 10),
-          TextField(
-            controller: _contentController,
-            maxLines: 6,
-            decoration: InputDecoration(
-              hintText: 'Nhập thông tin chi tiết về thẻ Pokemon',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Widget Tải Hình Ảnh Đa Nền Tảng
-  Widget _buildImageUploadSection() {
+  Widget _buildInputField({
+    required String label,
+    required String hint,
+    required TextEditingController controller,
+    int maxLines = 1,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Tải Hình Ảnh Thẻ',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          label,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
-        SizedBox(height: 10),
-        Row(
-          children: [
-            ElevatedButton.icon(
-              onPressed: _pickImage,
-              icon: Icon(Icons.upload_file),
-              label: Text('Chọn Ảnh'),
+        SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          maxLines: maxLines,
+          decoration: InputDecoration(
+            hintText: hint,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
             ),
-            SizedBox(width: 15),
-            // Hiển thị ảnh đa nền tảng
-            _selectedImage != null
-                ? _buildImageWidget()
-                : Container(),
-          ],
+          ),
         ),
       ],
     );
   }
 
-  // Widget hiển thị ảnh đa nền tảng
-  Widget _buildImageWidget() {
-    if (kIsWeb) {
-      // Xử lý cho web
-      return Image.network(
-        _selectedImage!.path,
-        width: 100,
-        height: 100,
-        fit: BoxFit.cover,
-      );
-    } else {
-      // Xử lý cho mobile
-      return Image.file(
-        File(_selectedImage!.path),
-        width: 100,
-        height: 100,
-        fit: BoxFit.cover,
-      );
-    }
-  }
-
-  // Nút Đăng Bài
-  Widget _buildSubmitButton() {
-    return ElevatedButton(
-      onPressed: _submitPost,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blue,
-        padding: EdgeInsets.symmetric(vertical: 15),
-      ),
-      child: Text(
-        'Tạo Thẻ Mới',
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
+  Widget _buildImageUrlInput() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'URL Ảnh Thẻ Pokemon',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
-      ),
+        SizedBox(height: 8),
+        TextField(
+          controller: _imageUrlController,
+          decoration: InputDecoration(
+            hintText: 'Nhập URL ảnh',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+        SizedBox(height: 10),
+        if (_imageUrlController.text.isNotEmpty)
+          Container(
+            width: double.infinity,
+            height: 150,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.blue, width: 2),
+              borderRadius: BorderRadius.circular(10),
+              color: Colors.grey[200],
+            ),
+            child: Image.network(
+              _imageUrlController.text,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Center(child: Text('URL không hợp lệ'));
+              },
+            ),
+          ),
+      ],
     );
   }
 
-  // Hàm xử lý đăng bài
-  void _submitPost() {
-    // Kiểm tra và xử lý dữ liệu
+  Future<void> _submitPost() async {
     if (_titleController.text.isEmpty) {
       _showSnackBar('Vui lòng nhập tên thẻ');
       return;
@@ -245,31 +183,55 @@ class _AdminScreenState extends State<AdminScreen> {
       return;
     }
 
-    if (_selectedImage == null) {
-      _showSnackBar('Vui lòng chọn ảnh thẻ');
+    if (_imageUrlController.text.isEmpty) {
+      _showSnackBar('Vui lòng nhập URL ảnh thẻ');
       return;
     }
 
-    // Thực hiện đăng bài
-    print('Tên Thẻ: ${_titleController.text}');
-    print('Mô Tả: ${_contentController. text}');
-    print('Đường Dẫn Ảnh: ${_selectedImage!.path}');
+    try {
+      // Tạo đối tượng NewsPost từ dữ liệu trong form
+      NewsPost newPost = NewsPost(
+        title: _titleController.text,
+        content: _contentController.text,
+        imageUrl: _imageUrlController.text,
+        createdAt: DateTime.now().toIso8601String(),
+        adminId: 'admin123',  // Giả sử adminId là 'admin123'
+        isPublished: true,
+      );
 
-    // Reset form sau khi đăng
-    _titleController.clear();
-    _contentController.clear();
-    setState(() {
-      _selectedImage = null;
-    });
+      // Gửi dữ liệu lên API (tạo bài viết mới)
+      final response = await http.post(
+        Uri.parse('https://yourapi.com/newsposts'),  // Thay URL API của bạn vào đây
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(newPost.toJson()),
+      );
 
-    // Hiển thị thông báo
-    _showSnackBar('Thẻ đã được tạo thành công!');
+      if (response.statusCode == 201) {
+        // Nếu yêu cầu thành công, lưu bài viết vào cơ sở dữ liệu
+        await _dbHelper.insertNewsPost(newPost);
+
+        // Xóa dữ liệu nhập vào sau khi thành công
+        _titleController.clear();
+        _contentController.clear();
+        _imageUrlController.clear();
+
+        _showSnackBar('Thẻ đã được thêm vào cơ sở dữ liệu!');
+      } else {
+        _showSnackBar('Lỗi khi thêm bài viết: ${response.body}');
+      }
+    } catch (e) {
+      _showSnackBar('Lỗi khi thêm bài viết: $e');
+    }
   }
 
-  // Hàm hiển thị SnackBar
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(context as BuildContext).showSnackBar(SnackBar(content: Text(message)));
   }
+}
+
+void main() {
+  runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
+    home: AdminPage(),
+  ));
 }
