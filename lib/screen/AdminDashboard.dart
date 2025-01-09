@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'addcard_page.dart'; // Import trang AddCard_Page
+import '../screen/AddCard_page.dart';
 import 'Admin_page.dart';
 
 void main() {
@@ -174,7 +174,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     } else if (currentView == 'news') {
       return _buildListView(news, 'News');
     } else if (currentView == 'addCard') {
-      return PokemonCardEntryPage(); // Show the AddCardPage
+      return AddCardPage(); // Show the AddCardPage
     } else if (currentView == 'adminPage') {
       return AdminPage(); // Show AdminPage content here in the body
     } else {
