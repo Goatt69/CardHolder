@@ -22,6 +22,7 @@ dependencies:
   url_launcher: ^6.1.7
   sqflite: ^2.0.0+3
   path_provider: ^2.0.11
+  marquee: ^2.3.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -10,7 +10,7 @@ class PokePostService {
   Future<List<PokePost>> getAllPosts() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('jwt_token');
-    
+
     final response = await http.get(
       Uri.parse("${Config_URL.baseUrl}PokemonPost"),
       headers: {
@@ -29,7 +29,7 @@ class PokePostService {
   Future<PokePost> createPost(String cardId, String description) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('jwt_token');
-    
+
     final response = await http.post(
       Uri.parse("${Config_URL.baseUrl}PokemonPost"),
       headers: {
@@ -93,7 +93,7 @@ class PokePostService {
       throw Exception('Failed to accept trade offer');
     }
   }
-  
+
   Future<List<TradeOffer>> getTradeOffers(int postId) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('jwt_token');
@@ -112,7 +112,9 @@ class PokePostService {
     }
     throw Exception('Failed to load trade offers');
   }
-}
 
+
+
+}
 
 
