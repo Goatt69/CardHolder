@@ -27,16 +27,11 @@ class AdminDashboard extends StatefulWidget {
 }
 
 class _AdminDashboardState extends State<AdminDashboard> {
-  // Simulating database with mock data
-  List<String> cards = ['Card 1', 'Card 2', 'Card 3'];
-  List<String> news = ['News 1', 'News 2', 'News 3'];
 
   // Controllers for input fields
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
   final TextEditingController _imageUrlController = TextEditingController();
-
-  String? _editingNews;
 
   String currentView = ''; // Track which section is currently being viewed
 
@@ -46,8 +41,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
       body: Row(
         children: [
           Sidebar(
-            onViewCards: _viewCards,
-            onViewNews: _viewNews,
             onAddCard: _addCard,
             onAdmin: _admin,
           ),
@@ -70,20 +63,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 
-  // Display cards
-  void _viewCards() {
-    setState(() {
-      currentView = 'cards';
-    });
-  }
-
-  // Display news
-  void _viewNews() {
-    setState(() {
-      currentView = 'news';
-    });
-  }
-
   // Show AddCardPage in the body
   void _addCard() {
     setState(() {
@@ -98,69 +77,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
     });
   }
 
-  // Create a ListView for cards or news
-  Widget _buildListView(List<String> items, String itemType) {
-    return ListView.builder(
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        return ListTile(
-          title: Text(items[index]),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: Icon(Icons.edit),
-                onPressed: () => _editItem(items[index]),
-              ),
-              IconButton(
-                icon: Icon(Icons.delete),
-                onPressed: () => _deleteItem(index),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  // Edit a card or news item
-  void _editItem(String item) {
-    setState(() {
-      _editingNews = item;
-      _titleController.text = item; // Pre-fill the input fields for editing
-      _contentController.text = "Content for $item"; // Example content
-      _imageUrlController.text = 'http://example.com/$item.png'; // Example image URL
-    });
-  }
-
-  // Delete a card or news item
-  void _deleteItem(int index) {
-    setState(() {
-      if (currentView == 'cards') {
-        cards.removeAt(index);
-      } else if (currentView == 'news') {
-        news.removeAt(index);
-      }
-    });
-  }
-
   // Add or update news
   void _submitNews() {
     if (_titleController.text.isEmpty || _contentController.text.isEmpty || _imageUrlController.text.isEmpty) {
       return; // Handle validation
     }
-
-    if (_editingNews == null) {
-      setState(() {
-        news.add(_titleController.text); // Add new news to list
-      });
-    } else {
-      setState(() {
-        int index = news.indexOf(_editingNews!);
-        news[index] = _titleController.text; // Update existing news
-      });
-    }
-
+    
     // Clear input fields after submission
     _titleController.clear();
     _contentController.clear();
@@ -169,11 +91,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   // Build content based on the current view
   Widget _buildViewContent() {
-    if (currentView == 'cards') {
-      return _buildListView(cards, 'Cards');
-    } else if (currentView == 'news') {
-      return _buildListView(news, 'News');
-    } else if (currentView == 'addCard') {
+     if (currentView == 'addCard') {
       return AddCardPage(); // Show the AddCardPage
     } else if (currentView == 'adminPage') {
       return AdminPage(); // Show AdminPage content here in the body
@@ -184,12 +102,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
 }
 
 class Sidebar extends StatelessWidget {
-  final VoidCallback onViewCards;
-  final VoidCallback onViewNews;
   final VoidCallback onAddCard;
   final VoidCallback onAdmin;
 
-  Sidebar({required this.onViewCards, required this.onViewNews, required this.onAddCard, required this.onAdmin});
+  Sidebar({required this.onAddCard, required this.onAdmin});
 
   @override
   Widget build(BuildContext context) {
@@ -228,16 +144,6 @@ class Sidebar extends StatelessWidget {
             icon: Icons.add_box,
             label: 'Add News',
             onTap: onAdmin,
-          ),
-          SidebarItem(
-            icon: Icons.remove_red_eye,
-            label: 'View Added Cards',
-            onTap: onViewCards,
-          ),
-          SidebarItem(
-            icon: Icons.remove_red_eye,
-            label: 'View Added News',
-            onTap: onViewNews,
           ),
         ],
       ),

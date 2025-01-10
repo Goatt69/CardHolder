@@ -73,7 +73,7 @@ class _HomePageState extends State<HomePage> {
     try {
       final posts = await _newsPostService.getAllNewsPosts();
       setState(() {
-        _newsPosts = posts;
+        _newsPosts =posts.where((post) => post.isPublished != false).toList();
         _isLoading = false;
       });
     } catch (e) {

@@ -530,13 +530,6 @@ class _PokemonCardBrowserState extends State<PokemonCardBrowser> {
             },
             child: const Text('Máy ảnh'),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Thêm xử lý mở thư viện ảnh
-            },
-            child: const Text('Thư viện'),
-          ),
         ],
       ),
     );
